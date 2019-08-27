@@ -30,7 +30,7 @@ head(sparrows) #check observations within dataset
 str(sparrows) #check structure of dataset
 sparrows<-subset(sparrows, sparrows$CaptureRef!="NA!") #remove empty observation fields (imported from excel)
 
-#visualise the data
+#visualise the data 
 par(mfrow=c(1,3)) #set display to show all 3 graphs side by side
 hist(sparrows$HB) #distribution of hidden badge size
 hist(sparrows$VB) #distribution of visible badge size
