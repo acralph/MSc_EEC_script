@@ -1,4 +1,4 @@
-#R script for the analysis of heritablity and selection of ornaments in house sparrows
+#R script for the analysis of heritablity and selection of house sparrow ornaments
 
 rm(list=ls()) #clear workspace
 setwd("~/data") #set working directory
@@ -160,7 +160,7 @@ boxplot(VB$VB~VB$age) #seems fairly constant
 boxplot(VB$VB~VB$Observer) #AS also noticeably different here
 
 #check statistical difference between AS measures and overall mean
-t.test(VB$VB[VB$Observer=="AS"], VB$VB) #very different
+t.test(VB$VB[VB$Observer=="AS"], VB$VB) #test statistical difference - very different
 AS<-length(VB$BirdID[VB$Observer=="AS"]) #find total number of VB observations of 'AS' 
 ALL<-length(VB$BirdID) #find total number of VB observations 
 (AS/ALL)*100 #find the percentage of all VB observations taken by AS
@@ -168,7 +168,7 @@ VB<-subset(VB, Observer!="AS") #remove observer from data
 
 #find total number of birds measured and the repeated measures
 length(unique(VB$BirdID)) #find total individuals measured
-VB.repeats<-VB%>%group_by(BirdID)%>%summarise(n=length(VB)) #create df of no. measurements taken of each bird
+VB.repeats<-VB%>%group_by(BirdID)%>%summarise(n=length(VB)) #create dataframe of no. measurements taken of each bird
 VB.repeats%>%group_by(n)%>%summarise(length(BirdID)) #find how many birds were subject to each number of repeated measurements
 length(VB$BirdID) #find total number of observations
 
@@ -192,19 +192,19 @@ summary(VBmod.agecorr) #view model results
 plot(VBmod.agecorr) #diagnostic plots
 autocorr(VBmod.agecorr$VCV) #check autocorrelations
 autocorr(VBmod.agecorr$Sol) #check autocorrelations
-posterior.mode(VBmod.agecorr$VCV)
-HPDinterval(VBmod.agecorr$VCV)
-posterior.mode(VBmod.agecorr$Sol)
-HPDinterval(VBmod.agecorr$Sol)
+posterior.mode(VBmod.agecorr$VCV) #view posterior modes of the variance component estimates
+HPDinterval(VBmod.agecorr$VCV) #view credible intervals of the variance component estimates
+posterior.mode(VBmod.agecorr$Sol) #view posterior modes of the fixed factors
+HPDinterval(VBmod.agecorr$Sol) #view credible intervals of the fixed factors
 VBmod.agecorr.vp.full<-(VBmod.agecorr$VCV[,"BirdID"]+VBmod.agecorr$VCV[,"animal"]
                         +VBmod.agecorr$VCV[,"units"]+VBmod.agecorr$VCV[,"Cohort"]
-                        +VBmod.agecorr$VCV[,"captureyear"]+VBmod.agecorr$VCV[,"Observer"])
-posterior.mode(VBmod.agecorr.vp.full)
-HPDinterval(VBmod.agecorr.vp.full)
+                        +VBmod.agecorr$VCV[,"captureyear"]+VBmod.agecorr$VCV[,"Observer"]) #find total phenotypic variance
+posterior.mode(VBmod.agecorr.vp.full) #view total phenotypic variance
+HPDinterval(VBmod.agecorr.vp.full) #view phenotypic variance credible intervals
 VBmod.agecorr.vp<-(VBmod.agecorr$VCV[,"BirdID"]+VBmod.agecorr$VCV[,"animal"]
-                   +VBmod.agecorr$VCV[,"units"]+VBmod.agecorr$VCV[,"Cohort"]) #find VB total phenotypic var.
-posterior.mode(VBmod.agecorr.vp)
-HPDinterval(VBmod.agecorr.vp)
+                   +VBmod.agecorr$VCV[,"units"]+VBmod.agecorr$VCV[,"Cohort"]) #find VB adjusted VB with obs. and capture year
+posterior.mode(VBmod.agecorr.vp) #view adjusted VB adjusted variance
+HPDinterval(VBmod.agecorr.vp) #view adjusted VB adjusted variance credible interval
 VBmod.agecorr.h2<-VBmod.agecorr$VCV[,"animal"]/VBmod.agecorr.vp #find age-corr. VB heritability
 posterior.mode(VBmod.agecorr.h2) #view heritability
 HPDinterval(VBmod.agecorr.h2) #view CIs
@@ -267,6 +267,7 @@ View(VB.summstats)
 VB.age4to8 <- rbind(VB.age4, VB.age5, VB.age6, VB.age7, VB.age8) #create df with all age 4-8 because of the small sample sizes
 length(VB.age4to8$BirdID) #count number of observations
 length(unique(VB.age4to8$BirdID)) #count age 4-8 birds measured for VB
+
 #age 4-8 summary stats
 mean(VB.age4to8$VB)
 var(VB.age4to8$VB)
@@ -278,7 +279,7 @@ VB.summstats<-VB.summstats[-c(4:8), ]  #remove all individual 4-8 sample sizes
 VB.summstats$n<-as.numeric(as.character(VB.summstats$n)) #make n numeric for plotting
 VB.summstats$age<-as.factor(VB.summstats$age) #make age a factor for plotting
 
-png(filename="VB.n.byage.png", width=500, height=400, units="px")
+png(filename="VB.n.byage.png", width=500, height=400, units="px") #open file to save plot to working directory
 ggplot(VB.summstats, aes(x=age, y=n, group=1, fill=age)) +
   geom_bar(stat="identity", position=position_dodge(), color="black")+
   scale_fill_manual(values=rep("grey78", 4))+
@@ -287,7 +288,7 @@ ggplot(VB.summstats, aes(x=age, y=n, group=1, fill=age)) +
   ylab("n")+
   scale_y_continuous(expand=c(0,0))+
   theme(legend.position = "none", axis.text=element_text(size=16),
-        axis.title=element_text(size=16))#plot bar chart of sample size by age 
+        axis.title=element_text(size=16)) #plot bar chart of sample size by age 
 dev.off()
 
 #show distributions for VB size of each age groups
@@ -303,7 +304,7 @@ VB.age1.prior <- list(G = list(G1 = list(V = (VB.age1.var/6), n = 1),
                                G2 = list(V = (VB.age1.var/6), n = 1),
                                G3 = list(V = (VB.age1.var/6), n = 1),
                                G4 = list(V = (VB.age1.var/6), n = 1),
-                               R = list(V = (VB.age1.var/6), n = 1)))
+                               R = list(V = (VB.age1.var/6), n = 1)))  #set the prior
 VBmod.age1<-MCMCglmm(VB~moult, random=~BirdID+animal+Cohort+Observer+captureyear, 
                      pedigree=fixedped, data=VB.age1, 
                      thin=1000, burnin=10000, 
@@ -313,24 +314,24 @@ summary(VBmod.age1) #view model results
 plot(VBmod.age1) #diagnostic plots
 autocorr(VBmod.age1$VCV) #check autocorrelations
 autocorr(VBmod.age1$Sol) #check autocorrelations
-posterior.mode(VBmod.age1$VCV)
-HPDinterval(VBmod.age1$VCV)
-posterior.mode(VBmod.age1$Sol)
-HPDinterval(VBmod.age1$Sol)
+posterior.mode(VBmod.age1$VCV) #view posterior modes of variance components
+HPDinterval(VBmod.age1$VCV) #view credible intervals
+posterior.mode(VBmod.age1$Sol) #view posterior modes of fixed factors
+HPDinterval(VBmod.age1$Sol) #view credible intervals
 VBmod.age1.vp.full<-(VBmod.age1$VCV[, "animal"]
                      +VBmod.age1$VCV[, "BirdID"]
                      +VBmod.age1$VCV[, "Cohort"]
                      +VBmod.age1$VCV[, "units"]
                      +VBmod.age1$VCV[, "captureyear"]
                      +VBmod.age1$VCV[, "Observer"]) #find age 1 total Vp
-posterior.mode(VBmod.age1.vp.full)
-HPDinterval(VBmod.age1.vp.full)
+posterior.mode(VBmod.age1.vp.full) #view total Vp
+HPDinterval(VBmod.age1.vp.full) #view CIs
 VBmod.age1.vp<-(VBmod.age1$VCV[, "animal"]
                 +VBmod.age1$VCV[, "BirdID"]
                 +VBmod.age1$VCV[, "Cohort"]
                 +VBmod.age1$VCV[, "units"]) #find age 1 adjusted Vp for heritability estimate
-posterior.mode(VBmod.age1.vp)
-HPDinterval(VBmod.age1.vp)
+posterior.mode(VBmod.age1.vp) #view age 1 adjusted Vp
+HPDinterval(VBmod.age1.vp) #view CIs
 VBmod.age1.h2<-VBmod.age1$VCV[, "animal"]/VBmod.age1.vp #find age 1 VB heritability
 posterior.mode(VBmod.age1.h2) #view heritability
 HPDinterval(VBmod.age1.h2) #view CIs
@@ -350,7 +351,7 @@ VB.age2.prior <- list(G = list(G1 = list(V = (VB.age2.var/6), n = 1),
                                G2 = list(V = (VB.age2.var/6), n = 1),
                                G3 = list(V = (VB.age2.var/6), n = 1),
                                G4 = list(V = (VB.age2.var/6), n = 1),
-                               R = list(V = (VB.age2.var/6), n = 1))) 
+                               R = list(V = (VB.age2.var/6), n = 1))) #set the prior
 VBmod.age2<-MCMCglmm(VB~moult, random=~BirdID+animal+Cohort+Observer+captureyear, 
                      pedigree=fixedped, data=VB.age2, 
                      thin=1000, burnin=10000, 
@@ -360,24 +361,24 @@ summary(VBmod.age2) #view model results
 plot(VBmod.age2) #diagnostic plots
 autocorr(VBmod.age2$VCV) #check autocorrelation
 autocorr(VBmod.age2$Sol) #check autocorrelation
-posterior.mode(VBmod.age2$VCV)
-HPDinterval(VBmod.age2$VCV)
-posterior.mode(VBmod.age2$Sol)
-HPDinterval(VBmod.age2$Sol)
+posterior.mode(VBmod.age2$VCV) #view posterior modes of variance components
+HPDinterval(VBmod.age2$VCV) #view CIs
+posterior.mode(VBmod.age2$Sol) #view posterior modes of fixed factors
+HPDinterval(VBmod.age2$Sol) #view CIs
 VBmod.age2.vp.full<-(VBmod.age2$VCV[, "animal"]
                      +VBmod.age2$VCV[, "BirdID"]
                      +VBmod.age2$VCV[, "Cohort"]
                      +VBmod.age2$VCV[, "units"]
                      +VBmod.age2$VCV[, "captureyear"]
                      +VBmod.age2$VCV[, "Observer"]) #find total Vp
-posterior.mode(VBmod.age2.vp.full)
-HPDinterval(VBmod.age2.vp.full)
+posterior.mode(VBmod.age2.vp.full) #view total Vp
+HPDinterval(VBmod.age2.vp.full) #view CIs
 VBmod.age2.vp<-(VBmod.age2$VCV[, "animal"]
                 +VBmod.age2$VCV[, "BirdID"]
                 +VBmod.age2$VCV[, "Cohort"]
                 +VBmod.age2$VCV[, "units"]) #find adjusted age 2 VB Vp for heritability estimate
-posterior.mode(VBmod.age2.vp)
-HPDinterval(VBmod.age2.vp)
+posterior.mode(VBmod.age2.vp) #view adjusted Vp
+HPDinterval(VBmod.age2.vp) #view CIs
 VBmod.age2.h2<-VBmod.age2$VCV[, "animal"]/VBmod.age2.vp #find age 2 VB heritability
 posterior.mode(VBmod.age2.h2) #view heritability
 HPDinterval(VBmod.age2.h2) #view CIs
@@ -397,7 +398,7 @@ VB.age3.prior <- list(G = list(G1 = list(V = (VB.age3.var/6), n = 1),
                                G2 = list(V = (VB.age3.var/6), n = 1),
                                G3 = list(V = (VB.age3.var/6), n = 1),
                                G4 = list(V = (VB.age3.var/6), n = 1),
-                               R = list(V = (VB.age3.var/6), n = 1)))
+                               R = list(V = (VB.age3.var/6), n = 1))) #set the prior
 VBmod.age3<-MCMCglmm(VB~moult, random=~BirdID+animal+Cohort+Observer+captureyear, 
                      pedigree=fixedped, data=VB.age3, 
                      thin=1000, burnin=10000, 
@@ -407,24 +408,24 @@ summary(VBmod.age3) #view model results
 plot(VBmod.age3) #diagnostic plots
 autocorr(VBmod.age3$VCV) #check autocorrelation
 autocorr(VBmod.age3$Sol) #check autocorrelation
-posterior.mode(VBmod.age3$VCV)
-HPDinterval(VBmod.age3$VCV)
-posterior.mode(VBmod.age3$Sol)
-HPDinterval(VBmod.age3$Sol)
+posterior.mode(VBmod.age3$VCV) #view variance component posterior modes
+HPDinterval(VBmod.age3$VCV) #view CIs
+posterior.mode(VBmod.age3$Sol) #view fixed factor posterior modes
+HPDinterval(VBmod.age3$Sol) #view CIs
 VBmod.age3.vp.full<-(VBmod.age3$VCV[, "animal"]
                      +VBmod.age3$VCV[, "BirdID"]
                      +VBmod.age3$VCV[, "Cohort"]
                      +VBmod.age3$VCV[, "units"]
                      +VBmod.age3$VCV[, "captureyear"]
                      +VBmod.age3$VCV[, "Observer"]) #find full age 3 VB Vp
-posterior.mode(VBmod.age3.vp.full)
-HPDinterval(VBmod.age3.vp.full)
+posterior.mode(VBmod.age3.vp.full) #view full Vp
+HPDinterval(VBmod.age3.vp.full) #view CIs
 VBmod.age3.vp<-(VBmod.age3$VCV[, "animal"]
                 +VBmod.age3$VCV[, "BirdID"]
                 +VBmod.age3$VCV[, "Cohort"]
                 +VBmod.age3$VCV[, "units"]) #find adjusted age 3 VB Vp
-posterior.mode(VBmod.age3.vp)
-HPDinterval(VBmod.age3.vp)
+posterior.mode(VBmod.age3.vp) #view adjusted Vp
+HPDinterval(VBmod.age3.vp) #view CIs
 VBmod.age3.h2<-VBmod.age3$VCV[, "animal"]/VBmod.age3.vp #find age 3 VB heritability
 posterior.mode(VBmod.age3.h2) #view heritability
 HPDinterval(VBmod.age3.h2) #view CIs
@@ -444,7 +445,7 @@ VB.age4to8.prior<- list(G = list(G1 = list(V = (VB.age4to8.var/6), n = 1),
                                  G2 = list(V = (VB.age4to8.var/6), n = 1),
                                  G3 = list(V = (VB.age4to8.var/6), n = 1),
                                  G4 = list(V = (VB.age4to8.var/6), n = 1),
-                                 R = list(V = (VB.age4to8.var/6), n = 1)))
+                                 R = list(V = (VB.age4to8.var/6), n = 1))) #set the prior
 VBmod.age4to8<-MCMCglmm(VB~moult+age, random=~BirdID+animal+Cohort+Observer+captureyear, 
                         pedigree=fixedped, data=VB.age4to8, thin=1000, burnin=10000, 
                         nitt=1000000, prior=VB.age4to8.prior, verbose=F) #best age 4-8 VB model; include age to prevent heritability inflation and improve DIC!
@@ -453,24 +454,24 @@ summary(VBmod.age4to8) #view model results
 plot(VBmod.age4to8) #diagnostic plots
 autocorr(VBmod.age4to8$VCV) #check autocorrelation
 autocorr(VBmod.age4to8$Sol) #check autocorrelation
-posterior.mode(VBmod.age4to8$VCV)
-HPDinterval(VBmod.age4to8$VCV)
-posterior.mode(VBmod.age4to8$Sol)
-HPDinterval(VBmod.age4to8$Sol)
+posterior.mode(VBmod.age4to8$VCV) #view posterior modes of variance components
+HPDinterval(VBmod.age4to8$VCV) #view CIs
+posterior.mode(VBmod.age4to8$Sol) #view posterior modes of fixed factors
+HPDinterval(VBmod.age4to8$Sol) #view CIs
 VBmod.age4to8.vp.full<-(VBmod.age4to8$VCV[, "animal"]
                         +VBmod.age4to8$VCV[, "BirdID"]
                         +VBmod.age4to8$VCV[, "Cohort"]
                         +VBmod.age4to8$VCV[, "units"]
                         +VBmod.age4to8$VCV[, "captureyear"]
                         +VBmod.age4to8$VCV[, "Observer"]) #find full age 4-8 VB Vp
-posterior.mode(VBmod.age4to8.vp.full)
-HPDinterval(VBmod.age4to8.vp.full)
+posterior.mode(VBmod.age4to8.vp.full) #view full Vp
+HPDinterval(VBmod.age4to8.vp.full) #view CIs
 VBmod.age4to8.vp<-(VBmod.age4to8$VCV[, "animal"]
                    +VBmod.age4to8$VCV[, "BirdID"]
                    +VBmod.age4to8$VCV[, "Cohort"]
                    +VBmod.age4to8$VCV[, "units"]) #find adjusted age 4-8 VB Vp
-posterior.mode(VBmod.age4to8.vp)
-HPDinterval(VBmod.age4to8.vp)
+posterior.mode(VBmod.age4to8.vp) #view adjusted Vp
+HPDinterval(VBmod.age4to8.vp) #view CIs
 VBmod.age4to8.h2<-VBmod.age4to8$VCV[, "animal"]/VBmod.age4to8.vp #find age 4-8 VB heritability
 posterior.mode(VBmod.age4to8.h2) #view heritability
 HPDinterval(VBmod.age4to8.h2) #view CIs
@@ -624,13 +625,13 @@ VB.I.age1<-posterior.mode(VBmod.age1$VCV[,"animal"])/(mean(VB.age1$VB)*mean(VB.a
 VB.I.age2<-posterior.mode(VBmod.age2$VCV[,"animal"])/(mean(VB.age2$VB)*mean(VB.age2$VB)) #age 2
 VB.I.age3<-posterior.mode(VBmod.age3$VCV[,"animal"])/(mean(VB.age3$VB)*mean(VB.age3$VB)) #age 3
 VB.I.age4to8<-posterior.mode(VBmod.age4to8$VCV[,"animal"])/(mean(VB.age4to8$VB)*mean(VB.age4to8$VB)) #age 4-8
-VB.I<-c(VB.I.age1, VB.I.age2, VB.I.age3, VB.I.age4to8)
-Age<-c(1, 2, 3, "4 to 8")
-VB.I.byage<-cbind(Age, VB.I)
-VB.I.byage<-as.data.frame(VB.I.byage)
-VB.I.byage$Age<-as.factor(VB.I.byage$Age)
-VB.I.byage$VB.I<-as.numeric(as.character(VB.I.byage$VB.I))
-VB.I.byage$VB.I<-VB.I.byage$VB.I*100
+VB.I<-c(VB.I.age1, VB.I.age2, VB.I.age3, VB.I.age4to8) #join VB evolvability estimates of VB
+Age<-c(1, 2, 3, "4 to 8") #join ages as sequence
+VB.I.byage<-cbind(Age, VB.I) #join the ages and estimates
+VB.I.byage<-as.data.frame(VB.I.byage) #make them a dataframe
+VB.I.byage$Age<-as.factor(VB.I.byage$Age) #factorise age
+VB.I.byage$VB.I<-as.numeric(as.character(VB.I.byage$VB.I)) #make estimates numeric
+VB.I.byage$VB.I<-VB.I.byage$VB.I*100 #times estimates by 100 to give total evolvability of VB
 
 #plot evolvability by age of VB size
 png(filename="VB.I.byage.png", width=500, height=400, units="px") #save plot as png
@@ -642,7 +643,7 @@ ggplot(VB.I.byage, aes(x=Age, y=VB.I, group=1, fill=Age)) +
   ylab("Visible Badge Evolvability")+
   scale_y_continuous(expand=c(0,0))+
   theme(legend.position = "none", axis.text=element_text(size=16),
-        axis.title=element_text(size=16))#plot bar chart of VBsk sample size by age
+        axis.title=element_text(size=16)) #plot bar chart of VB sample size by age
 dev.off()
 
 #HIDDEN BADGE====
@@ -703,14 +704,14 @@ HBmod.agecorr.vp.full<-(HBmod.agecorr$VCV[,"BirdID"]
                         +HBmod.agecorr$VCV[,"Cohort"]
                         +HBmod.agecorr$VCV[,"captureyear"]
                         +HBmod.agecorr$VCV[,"Observer"]) #find total phenotypic variance
-posterior.mode(HBmod.agecorr.vp.full)
-HPDinterval(HBmod.agecorr.vp.full)
+posterior.mode(HBmod.agecorr.vp.full) #view full Vp
+HPDinterval(HBmod.agecorr.vp.full) #view CIs
 HBmod.agecorr.vp<-(HBmod.agecorr$VCV[,"BirdID"]
                    +HBmod.agecorr$VCV[,"animal"]
                    +HBmod.agecorr$VCV[,"units"]
                    +HBmod.agecorr$VCV[,"Cohort"]) #find adjusted total phenotypic variance for h2 estimation
-posterior.mode(HBmod.agecorr.vp)
-HPDinterval(HBmod.agecorr.vp)
+posterior.mode(HBmod.agecorr.vp) #view adjusted vp
+HPDinterval(HBmod.agecorr.vp) #view CIs
 HBmod.agecorr.h2<-HBmod.agecorr$VCV[,"animal"]/HBmod.agecorr.vp #find HB heritability
 posterior.mode(HBmod.agecorr.h2) #view heritability
 HPDinterval(HBmod.agecorr.h2) #view CIs
@@ -814,7 +815,7 @@ HB.prior.age1 <- list(G = list(G1 = list(V = (HB.age1.var/7), n = 1),
                                G3 = list(V = (HB.age1.var/7), n = 1), 
                                G4 = list(V = (HB.age1.var/7), n = 1), 
                                G5 = list(V = (HB.age1.var/7), n = 1),
-                               R = list(V = (HB.age1.var/7), n = 1)))
+                               R = list(V = (HB.age1.var/7), n = 1))) #set the prior
 HBmod.age1<-MCMCglmm(HB~1, random=~BirdID+animal+Cohort+Observer
                      +SocialBroodID+captureyear,pedigree=fixedped, 
                      data=HB.age1, prior=HB.prior.age1, thin=1000, 
@@ -824,10 +825,10 @@ summary(HBmod.age1) #view model results
 plot(HBmod.age1) #diagnostic plots
 autocorr(HBmod.age1$VCV) #check autocorrelations
 autocorr(HBmod.age1$Sol) #check autocorrelations
-posterior.mode(HBmod.age1$VCV)
-HPDinterval(HBmod.age1$VCV)
-posterior.mode(HBmod.age1$Sol)
-HPDinterval(HBmod.age1$Sol)
+posterior.mode(HBmod.age1$VCV) #view var. components posterior modes
+HPDinterval(HBmod.age1$VCV) #view CIs
+posterior.mode(HBmod.age1$Sol) #view fixed factor posterior modes
+HPDinterval(HBmod.age1$Sol) #view CIs
 HB.age1.vp.full<-(HBmod.age1$VCV[, "animal"]
                   +HBmod.age1$VCV[, "BirdID"]
                   +HBmod.age1$VCV[, "Cohort"]
@@ -835,14 +836,14 @@ HB.age1.vp.full<-(HBmod.age1$VCV[, "animal"]
                   +HBmod.age1$VCV[, "units"]
                   +HBmod.age1$VCV[, "captureyear"]
                   +HBmod.age1$VCV[, "Observer"]) #find age 1 HB total phenotypic variance
-posterior.mode(HB.age1.vp.full)
-HPDinterval(HB.age1.vp.full)
+posterior.mode(HB.age1.vp.full) #view full Vp
+HPDinterval(HB.age1.vp.full) #view CIs
 HB.age1.vp<-(HBmod.age1$VCV[, "animal"]
              +HBmod.age1$VCV[, "BirdID"]
              +HBmod.age1$VCV[, "Cohort"]
              +HBmod.age1$VCV[, "SocialBroodID"]
              +HBmod.age1$VCV[, "units"]) #find adjusted total phenotypic variance for h2 estimate
-posterior.mode(HB.age1.vp)
+posterior.mode(HB.age1.vp) 
 HPDinterval(HB.age1.vp)
 HB.age1.h2<-HBmod.age1$VCV[, "animal"]/HB.age1.vp #find age 1 HB heritability
 posterior.mode(HB.age1.h2) #view heritability
@@ -867,7 +868,7 @@ HB.prior.age2 <- list(G = list(G1 = list(V = (HB.age2.var/7), n = 1),
                                G3 = list(V = (HB.age2.var/7), n = 1), 
                                G4 = list(V = (HB.age2.var/7), n = 1), 
                                G5 = list(V = (HB.age2.var/7), n = 1),
-                               R = list(V = (HB.age2.var/7), n = 1)))
+                               R = list(V = (HB.age2.var/7), n = 1))) #set the prior
 HBmod.age2<-MCMCglmm(HB~1, random=~BirdID+animal+Cohort+Observer
                      +SocialBroodID+captureyear,pedigree=fixedped, 
                      data=HB.age2, prior=HB.prior.age2, thin=1000, 
@@ -920,7 +921,7 @@ HB.prior.age3 <- list(G = list(G1 = list(V = (HB.age3.var/7), n = 1),
                                G3 = list(V = (HB.age3.var/7), n = 1), 
                                G4 = list(V = (HB.age3.var/7), n = 1), 
                                G5 = list(V = (HB.age3.var/7), n = 1), 
-                               R = list(V = (HB.age3.var/7), n = 1))) #8 random effects
+                               R = list(V = (HB.age3.var/7), n = 1))) #set prior 
 HBmod.age3<-MCMCglmm(HB~1, random=~BirdID+animal+Cohort+Observer
                      +SocialBroodID+captureyear, pedigree=fixedped, 
                      data=HB.age3, prior=HB.prior.age3, thin=1000, 
@@ -1184,7 +1185,7 @@ HB.I.age4to8<-posterior.mode(HBmod.age4to8$VCV[,"animal"])/(mean(HB.age4to8$HB)*
 HB.I<-c(HB.I.age1, HB.I.age2, HB.I.age3, HB.I.age4to8)
 Age<-c(1, 2, 3, "4 to 8")
 HB.I.byage<-cbind(Age, HB.I)
-HB.I.byage<-as.data.frame(HB.I.byage)
+HB.I.byage<-as.data.frame(HB.I.byage) #create evolvability dataframe
 HB.I.byage$Age<-as.factor(HB.I.byage$Age)
 HB.I.byage$HB.I<-as.numeric(as.character(HB.I.byage$HB.I))
 HB.I.byage$HB.I<-HB.I.byage$HB.I*100
@@ -1199,7 +1200,7 @@ ggplot(HB.I.byage, aes(x=Age, y=HB.I, group=1, fill=Age)) +
   ylab("Hidden Badge Evolvability")+
   scale_y_continuous(expand=c(0,0))+
   theme(legend.position = "none", axis.text=element_text(size=16),
-        axis.title=element_text(size=16))#plot bar chart of HB sample size by age
+        axis.title=element_text(size=16)) #plot bar chart of HB sample size by age
 dev.off()
 
 #MASK====
@@ -1246,8 +1247,7 @@ prior1 <- list(G = list(G1 = list(V = (MA.var/6), n = 1),
                         G2 = list(V = (MA.var/6), n = 1), 
                         G3 = list(V = (MA.var/6), n = 1),
                         G4 = list(V = (MA.var/6), n = 1),
-                        R = list(V = (MA.var/6), n = 1))) #divide var between the 6 random factors
-
+                        R = list(V = (MA.var/6), n = 1))) #set the prior
 MAmod.agecorr<-MCMCglmm(MA~age+moult, random=~BirdID+animal+captureyear+Observer
                         +Cohort, prior=prior1, pedigree=fixedped, data=MA, 
                         thin=1000, burnin=10000, nitt=1000000, verbose=F) #run the model to find age-corr heritability of mask size
@@ -1362,8 +1362,7 @@ MA.prior.age1 <- list(G = list(G1 = list(V = (MA.age1.var/6), n = 1),
                                G2 = list(V = (MA.age1.var/6), n = 1), 
                                G3 = list(V = (MA.age1.var/6), n = 1), 
                                G4 = list(V = (MA.age1.var/6), n = 1),
-                               R = list(V = (MA.age1.var/6), n = 1))) #split var into the 6 random effects
-
+                               R = list(V = (MA.age1.var/6), n = 1))) #set the prior
 MAmod.age1<-MCMCglmm(MA~moult, random=~animal+BirdID+Observer+Cohort+captureyear,
                      prior=MA.prior.age1, pedigree=fixedped, data=MA.age1, thin=1000, 
                      burnin=10000, nitt=1000000, verbose=F) #run best animal model
@@ -1685,13 +1684,13 @@ MA.I.age1<-posterior.mode(MAmod.age1$VCV[,"animal"])/(mean(MA.age1$MA)*mean(MA.a
 MA.I.age2<-posterior.mode(MAmod.age2$VCV[,"animal"])/(mean(MA.age2$MA)*mean(MA.age2$MA)) #age 2
 MA.I.age3<-posterior.mode(MAmod.age3$VCV[,"animal"])/(mean(MA.age3$MA)*mean(MA.age3$MA)) #age 3
 MA.I.age4to8<-posterior.mode(MAmod.age4to8$VCV[,"animal"])/(mean(MA.age4to8$MA)*mean(MA.age4to8$MA)) #age 4-8
-MA.I<-c(MA.I.age1, MA.I.age2, MA.I.age3, MA.I.age4to8)
+MA.I<-c(MA.I.age1, MA.I.age2, MA.I.age3, MA.I.age4to8) #join evolvabilities by age
 Age<-c(1, 2, 3, "4 to 8")
 MA.I.byage<-cbind(Age, MA.I)
-MA.I.byage<-as.data.frame(MA.I.byage)
+MA.I.byage<-as.data.frame(MA.I.byage) #create dataframes of evolvabilities by age
 MA.I.byage$Age<-as.factor(MA.I.byage$Age)
 MA.I.byage$MA.I<-as.numeric(as.character(MA.I.byage$MA.I))
-MA.I.byage$MA.I<-MA.I.byage$MA.I*100
+MA.I.byage$MA.I<-MA.I.byage$MA.I*100 #find total evolvability (times each estimate by 100)
 
 #plot evolvability by age of mask size
 png(filename="MA.I.byage.png", width=500, height=400, units="px") #save plot as png
@@ -1954,5 +1953,4 @@ sg.n %>%
         panel.background = element_blank(), axis.line = element_line(colour = "black")) +
   scale_y_continuous(expand=c(0,0), breaks=round(seq(0, 160, by=20), 1) ) #plot sample sizes by year of males used in selection analyses
 dev.off()
-
-#END OF SCRIPT
+##END OF SCRIPT
