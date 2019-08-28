@@ -221,42 +221,6 @@ HPDinterval(VBmod.agecorr.r) #view CIs
 #find VB age-corrected evolvability (mean-standardised)
 posterior.mode(VBmod.agecorr$VCV[,"animal"])/(mean(VB$VB)*mean(VB$VB))
 
-#VB age-corr plot====
-Variables<-c("Heritability", "Permanent env.", "Birth Year", "Capture Year", "Residual") #create vector of variance component names
-VB.vp<-(VBmod.agecorr$VCV[,"animal"]+
-          VBmod.agecorr$VCV[,"BirdID"]+
-          VBmod.agecorr$VCV[,"Cohort"]+
-          VBmod.agecorr$VCV[,"units"]) #find VB Vp
-var.prop<-c((posterior.mode(VBmod.agecorr$VCV[,"animal"]/VB.vp)), 
-            (posterior.mode(VBmod.agecorr$VCV[,"BirdID"]/VB.vp)),
-            (posterior.mode(VBmod.agecorr$VCV[,"Cohort"]/VB.vp)),
-            (posterior.mode(VBmod.agecorr$VCV[,"units"]/VB.vp))) #create vector of VB var. comp. estimates
-
-var.lower<-c((HPDinterval(VBmod.agecorr$VCV[,"animal"]/VB.vp))[1], 
-             (HPDinterval(VBmod.agecorr$VCV[,"BirdID"]/VB.vp))[1],
-             (HPDinterval(VBmod.agecorr$VCV[,"Cohort"]/VB.vp))[1],
-             (HPDinterval(VBmod.agecorr$VCV[,"units"]/VB.vp))[1]) #create vector of lower CIs
-
-var.upper<-c((HPDinterval(VBmod.agecorr$VCV[,"animal"]/VB.vp))[2], 
-             (HPDinterval(VBmod.agecorr$VCV[,"BirdID"]/VB.vp))[2],
-             (HPDinterval(VBmod.agecorr$VCV[,"Cohort"]/VB.vp))[2],
-             (HPDinterval(VBmod.agecorr$VCV[,"units"]/VB.vp))[2]) #create vector of upper CIs
-
-VB.plot<-as.data.frame(cbind(Variables, var.prop, var.lower, var.upper)) #create age-corr var. df
-VB.plot$var.prop<-as.numeric(as.character(VB.plot$var.prop)) #make var. numeric
-VB.plot$var.lower<-as.numeric(as.character(VB.plot$var.lower)) #make CIs numeric
-VB.plot$var.upper<-as.numeric(as.character(VB.plot$var.upper)) #make CIs numeric
-
-#create plot of each VB variance component and associated CIs
-plot1<-ggplot(VB.plot, aes(x=Variables, y=var.prop, group=1)) +
-  geom_errorbar(size=0.4, width=0.06, aes(ymin=VB.plot$var.lower, ymax=VB.plot$var.upper), colour="black") +
-  geom_point(shape=21, size=2, fill="black") +
-  theme_classic() +
-  xlab("Variance Component") +
-  ylab("Proportion of Total Variance") 
-scale_y_continuous(breaks = pretty(VB.plot$var.prop, n = 8))
-plot1 #view plot
-
 #VB by age====
 VB.ages <- split( VB , f = VB$age )#split dataset into a list of dataframes of each age
 for (i in 1:length(VB.ages)) {
@@ -485,115 +449,6 @@ VBmod.age4to8.r<-VBmod.age4to8$VCV[, "units"]/VBmod.age4to8.vp #find age 4-8 VB 
 posterior.mode(VBmod.age4to8.r) #view residual effects
 HPDinterval(VBmod.age4to8.r) #view CIs
 
-#VB stacked plot====
-Age<-rep(1, 4) #repeat age for each variance component
-Component<-c("Residual", "Cohort", "Bird ID", "Heritability") #create vector of variance component names
-VB.age1.vp<-(VBmod.age1$VCV[,"units"]+
-               VBmod.age1$VCV[,"Cohort"]+
-               VBmod.age1$VCV[,"BirdID"]+
-               VBmod.age1$VCV[,"animal"]) #find age 1 VB Vp
-
-var.prop<-c((mean(VBmod.age1$VCV[,"units"]/VB.age1.vp)), 
-            (mean(VBmod.age1$VCV[,"Cohort"]/VB.age1.vp)),
-            (mean(VBmod.age1$VCV[,"BirdID"]/VB.age1.vp)),
-            (mean(VBmod.age1$VCV[,"animal"]/VB.age1.vp))) #create vector of age 1 var. comp. estimates
-
-var.lower<-c((HPDinterval(VBmod.age1$VCV[,"units"]/VB.age1.vp))[1], 
-             (HPDinterval(VBmod.age1$VCV[,"Cohort"]/VB.age1.vp))[1],
-             (HPDinterval(VBmod.age1$VCV[,"BirdID"]/VB.age1.vp))[1],
-             (HPDinterval(VBmod.age1$VCV[,"animal"]/VB.age1.vp))[1]) #create vector of lower CIs
-
-var.upper<-c((HPDinterval(VBmod.age1$VCV[,"units"]/VB.age1.vp))[2], 
-             (HPDinterval(VBmod.age1$VCV[,"Cohort"]/VB.age1.vp))[2],
-             (HPDinterval(VBmod.age1$VCV[,"BirdID"]/VB.age1.vp))[2],
-             (HPDinterval(VBmod.age1$VCV[,"animal"]/VB.age1.vp))[2]) #create vector of upper CIs
-
-VB.plot<-as.data.frame(cbind(Age, Component, var.prop, var.lower, var.upper)) #create df of age 1 var comps
-
-#find age two total phenotypic var
-Age<-rep(2, 4) #repeat age for each variance component
-Component<-c("Residual", "Cohort", "Bird ID", "Heritability") #create vector of variance component names
-VB.age2.vp<-(VBmod.age2$VCV[,"BirdID"]+VBmod.age2$VCV[,"animal"]+
-               VBmod.age2$VCV[,"Cohort"]+VBmod.age2$VCV[,"units"]) #find age 2 VB Vp
-var.prop<-c((mean(VBmod.age2$VCV[,"units"]/VB.age2.vp)), 
-            (mean(VBmod.age2$VCV[,"Cohort"]/VB.age2.vp)),
-            (mean(VBmod.age2$VCV[,"BirdID"]/VB.age2.vp)),
-            (mean(VBmod.age2$VCV[,"animal"]/VB.age2.vp))) #create vector of age 2 var. component estimates
-
-var.lower<-c((HPDinterval(VBmod.age2$VCV[,"units"]/VB.age2.vp))[1], 
-             (HPDinterval(VBmod.age2$VCV[,"Cohort"]/VB.age2.vp))[1],
-             (HPDinterval(VBmod.age2$VCV[,"BirdID"]/VB.age2.vp))[1],
-             (HPDinterval(VBmod.age2$VCV[,"animal"]/VB.age2.vp))[1]) #create vector of lower CIs
-
-var.upper<-c((HPDinterval(VBmod.age2$VCV[,"units"]/VB.age2.vp))[2], 
-             (HPDinterval(VBmod.age2$VCV[,"Cohort"]/VB.age2.vp))[2],
-             (HPDinterval(VBmod.age2$VCV[,"BirdID"]/VB.age2.vp))[2],
-             (HPDinterval(VBmod.age2$VCV[,"animal"]/VB.age2.vp))[2]) #create vector of upper CIs
-
-VB.plot.2<-as.data.frame(cbind(Age, Component, var.prop, var.lower, var.upper))
-
-#find age three total phenotypic var
-Age<-rep(3, 4) #repeat age for each variance component
-Component<-c("Residual", "Cohort", "Bird ID", "Heritability") #create vector of var. comp. names
-VB.age3.vp<-(VBmod.age3$VCV[,"BirdID"]+VBmod.age3$VCV[,"animal"]+
-               VBmod.age3$VCV[,"Cohort"]+VBmod.age3$VCV[,"units"]) #find age 3 VB Vp
-var.prop<-c((mean(VBmod.age3$VCV[,"units"]/VB.age3.vp)), 
-            (mean(VBmod.age3$VCV[,"Cohort"]/VB.age3.vp)),
-            (mean(VBmod.age3$VCV[,"BirdID"]/VB.age3.vp)),
-            (mean(VBmod.age3$VCV[,"animal"]/VB.age3.vp))) #create vector of age 3 var. comp. estimates
-
-var.lower<-c((HPDinterval(VBmod.age3$VCV[,"units"]/VB.age3.vp))[1], 
-             (HPDinterval(VBmod.age3$VCV[,"Cohort"]/VB.age3.vp))[1],
-             (HPDinterval(VBmod.age3$VCV[,"BirdID"]/VB.age3.vp))[1],
-             (HPDinterval(VBmod.age3$VCV[,"animal"]/VB.age3.vp))[1]) #create vector of lower CIs
-
-var.upper<-c((HPDinterval(VBmod.age3$VCV[,"units"]/VB.age3.vp))[2], 
-             (HPDinterval(VBmod.age3$VCV[,"Cohort"]/VB.age3.vp))[2],
-             (HPDinterval(VBmod.age3$VCV[,"BirdID"]/VB.age3.vp))[2],
-             (HPDinterval(VBmod.age3$VCV[,"animal"]/VB.age3.vp))[2]) #create vector of upper CIs
-
-VB.plot.3<-as.data.frame(cbind(Age, Component, var.prop, var.lower, var.upper)) #create age 3 df
-
-#age 4 to 8
-
-Age<-rep("4-8", 4) #repeat age for each var. comp.
-Component<-c("Residual", "Cohort", "Bird ID", "Heritability") #create vector of var. comp. names
-VB.age4to8.vp<-(VBmod.age4to8$VCV[,"BirdID"]+VBmod.age4to8$VCV[,"animal"]+
-                  VBmod.age4to8$VCV[,"Cohort"]+VBmod.age4to8$VCV[,"units"]) #find age 4-8 VB Vp
-var.prop<-c((mean(VBmod.age4to8$VCV[,"units"]/VB.age4to8.vp)), 
-            (mean(VBmod.age4to8$VCV[,"Cohort"]/VB.age4to8.vp)),
-            (mean(VBmod.age4to8$VCV[,"BirdID"]/VB.age4to8.vp)),
-            (mean(VBmod.age4to8$VCV[,"animal"]/VB.age4to8.vp))) #create vector of var. comp. estimates
-
-var.lower<-c((HPDinterval(VBmod.age4to8$VCV[,"units"]/VB.age4to8.vp))[1], 
-             (HPDinterval(VBmod.age4to8$VCV[,"Cohort"]/VB.age4to8.vp))[1],
-             (HPDinterval(VBmod.age4to8$VCV[,"BirdID"]/VB.age4to8.vp))[1],
-             (HPDinterval(VBmod.age4to8$VCV[,"animal"]/VB.age4to8.vp))[1]) #create vector of lower CIs
-
-var.upper<-c((HPDinterval(VBmod.age4to8$VCV[,"units"]/VB.age4to8.vp))[2], 
-             (HPDinterval(VBmod.age4to8$VCV[,"Cohort"]/VB.age4to8.vp))[2],
-             (HPDinterval(VBmod.age4to8$VCV[,"BirdID"]/VB.age4to8.vp))[2],
-             (HPDinterval(VBmod.age4to8$VCV[,"animal"]/VB.age4to8.vp))[2]) #create vector of upper CIs
-
-VB.plot.4<-as.data.frame(cbind(Age, Component, var.prop, var.lower, var.upper)) #make age 4-8 df
-
-VB.plot<-rbind(VB.plot, VB.plot.2, VB.plot.3, VB.plot.4) #join dfs for all ages
-VB.plot$var.prop<-as.numeric(as.character(VB.plot$var.prop)) #make variance estimates numeric
-VB.plot$var.lower<-as.numeric(as.character(VB.plot$var.lower)) #make CIs numeric 
-VB.plot$var.upper<-as.numeric(as.character(VB.plot$var.upper)) #make CIs numeric
-VB.plot$Component = factor(VB.plot$Component, levels = unique(VB.plot$Component)) #factorise and order var. comp. names
-head(VB.plot) #check finished df
-
-#make stacked bar plot of VB variance components by age and save as png
-png("VB.stackedplot.png")
-ggplot(VB.plot, aes(x = Age, y = var.prop, fill = Component)) + 
-  geom_bar(stat = "identity", width=0.7) +
-  xlab("Age") +
-  ylab("Proportion of Total Variance") +
-  scale_fill_manual(values=c("palegreen1", "palegreen3", "springgreen4", "purple4"))+
-  theme_classic(base_size=18)
-dev.off()
-
 #VB heritability plot====
 Age<-c(1, 2, 3, "4 to 8") #create vector of ages for labelling
 age1<-c(posterior.mode(VBmod.age1.h2), HPDinterval(VBmod.age1.h2)[1], HPDinterval(VBmod.age1.h2)[2]) #join age 1 heritability with CIs
@@ -727,44 +582,6 @@ HPDinterval(HBmod.agecorr.r) #view CIs
 
 #find HB age-corrected evolvability (mean-standardised)
 posterior.mode(HBmod.agecorr$VCV[,"animal"])/(mean(HB$HB)*mean(HB$HB))
-
-#HB age-corr plot====
-Variables<-c("A", "PE", "BY", "Yr", "R") #create vector of variance component names
-HB.vp<-(HBmod.agecorr$VCV[,"animal"]+
-          HBmod.agecorr$VCV[,"BirdID"]+
-          HBmod.agecorr$VCV[,"Cohort"]+
-          HBmod.agecorr$VCV[,"units"]) #find HB total phenotypic variance 
-
-var.prop<-c((posterior.mode(HBmod.agecorr$VCV[,"animal"]/HB.vp)), 
-            (posterior.mode(HBmod.agecorr$VCV[,"BirdID"]/HB.vp)),
-            (posterior.mode(HBmod.agecorr$VCV[,"Cohort"]/HB.vp)),
-            (posterior.mode(HBmod.agecorr$VCV[,"units"]/HB.vp))) #create vector of variance compent estimates
-
-var.lower<-c((HPDinterval(HBmod.agecorr$VCV[,"animal"]/HB.vp))[1], 
-             (HPDinterval(HBmod.agecorr$VCV[,"BirdID"]/HB.vp))[1],
-             (HPDinterval(HBmod.agecorr$VCV[,"Cohort"]/HB.vp))[1],
-             (HPDinterval(HBmod.agecorr$VCV[,"units"]/HB.vp))[1]) #create vector of lower CIs
-
-var.upper<-c((HPDinterval(HBmod.agecorr$VCV[,"animal"]/HB.vp))[2], 
-             (HPDinterval(HBmod.agecorr$VCV[,"BirdID"]/HB.vp))[2],
-             (HPDinterval(HBmod.agecorr$VCV[,"Cohort"]/HB.vp))[2],
-             (HPDinterval(HBmod.agecorr$VCV[,"units"]/HB.vp))[2]) #create vector of upper CIs
-
-HB.plot<-as.data.frame(cbind(Variables, var.prop, var.lower, var.upper)) #join names and variance estimates as a df
-
-HB.plot$var.prop<-as.numeric(as.character(HB.plot$var.prop)) #make estimates numeric
-HB.plot$var.lower<-as.numeric(as.character(HB.plot$var.lower)) #make lower CIs numeric
-HB.plot$var.upper<-as.numeric(as.character(HB.plot$var.upper)) #make upper CIs numeric
-
-#create plot of all age-corrected HB variance components and their CIs
-plot1<-ggplot(HB.plot, aes(x=Variables, y=var.prop, group=1)) +
-  geom_errorbar(size=0.4, width=0.06, aes(ymin=HB.plot$var.lower, ymax=HB.plot$var.upper), colour="black") +
-  geom_point(shape=21, size=2, fill="black") +
-  theme_classic() +
-  xlab("Variance Component") +
-  ylab("Proportion of Vp") 
-scale_y_continuous(breaks = pretty(HB.plot$var.prop, n = 8))
-plot1 #view plot
 
 #HB by age====
 HB.ages <- split( HB , f = HB$age )#split dataset into a list of dataframes of each age
@@ -1023,134 +840,6 @@ HBmod.age4to8.r<-HBmod.age4to8$VCV[, "units"]/HB.age4to8.vp #find age 4-8 HB res
 posterior.mode(HBmod.age4to8.r) #view residual
 HPDinterval(HBmod.age4to8.r) #view CIs
 
-#HB stacked plot====
-Age<-rep(1, 6) #vector of age repeated for no. of variance components
-Component<-c("Residual", "Cohort", "Bird ID", "Social Brood", "Maternal", "Heritability") #vector of variance comp. names
-HB.age1.vp<-(HBmod.age1$VCV[,"units"]+
-               HBmod.age1$VCV[,"Cohort"]+
-               HBmod.age1$VCV[,"BirdID"]+
-               HBmod.age1$VCV[,"SocialBroodID"]+
-               HBmod.age1$VCV[,"animal"]) #set age 1 Vp
-
-var.prop<-c((mean(HBmod.age1$VCV[,"units"]/HB.age1.vp)), 
-            (mean(HBmod.age1$VCV[,"Cohort"]/HB.age1.vp)),
-            (mean(HBmod.age1$VCV[,"BirdID"]/HB.age1.vp)),
-            (mean(HBmod.age1$VCV[,"SocialBroodID"]/HB.age1.vp)), 0,
-            (mean(HBmod.age1$VCV[,"animal"]/HB.age1.vp))) #create vector of variance estimates
-
-var.lower<-c((HPDinterval(HBmod.age1$VCV[,"units"]/HB.age1.vp))[1], 
-             (HPDinterval(HBmod.age1$VCV[,"Cohort"]/HB.age1.vp))[1],
-             (HPDinterval(HBmod.age1$VCV[,"BirdID"]/HB.age1.vp))[1],
-             (HPDinterval(HBmod.age1$VCV[,"SocialBroodID"]/HB.age1.vp))[1], 0,
-             (HPDinterval(HBmod.age1$VCV[,"animal"]/HB.age1.vp))[1]) #create vector of lower CIs
-
-var.upper<-c((HPDinterval(HBmod.age1$VCV[,"units"]/HB.age1.vp))[2], 
-             (HPDinterval(HBmod.age1$VCV[,"Cohort"]/HB.age1.vp))[2],
-             (HPDinterval(HBmod.age1$VCV[,"BirdID"]/HB.age1.vp))[2],
-             (HPDinterval(HBmod.age1$VCV[,"SocialBroodID"]/HB.age1.vp))[2], 0,
-             (HPDinterval(HBmod.age1$VCV[,"animal"]/HB.age1.vp))[2]) #create vector of upper CIs
-
-HB.plot<-as.data.frame(cbind(Age, Component, var.prop, var.lower, var.upper)) #create age 1 variance comp. dataframe
-
-#find age two total phenotypic var
-Age<-rep(2, 6) #repeat age for each variance component
-Component<-c("Residual", "Cohort", "Bird ID", "Social Brood", "Maternal", "Heritability") #create vector of variance component names
-HB.age2.vp<-(HBmod.age2$VCV[,"BirdID"]+HBmod.age2$VCV[,"animal"]+
-               HBmod.age2$VCV[,"Cohort"]+HBmod.age2$VCV[,"units"]+
-               HBmod.age2$VCV[,"SocialBroodID"]) #find age 2 HB total phenotypic variance
-var.prop<-c((mean(HBmod.age2$VCV[,"units"]/HB.age2.vp)), 
-            (mean(HBmod.age2$VCV[,"Cohort"]/HB.age2.vp)),
-            (mean(HBmod.age2$VCV[,"BirdID"]/HB.age2.vp)),
-            (mean(HBmod.age2$VCV[,"SocialBroodID"]/HB.age2.vp)), 0,
-            (mean(HBmod.age2$VCV[,"animal"]/HB.age2.vp))) #create vector of variance component estimates
-
-var.lower<-c((HPDinterval(HBmod.age2$VCV[,"units"]/HB.age2.vp))[1], 
-             (HPDinterval(HBmod.age2$VCV[,"Cohort"]/HB.age2.vp))[1],
-             (HPDinterval(HBmod.age2$VCV[,"BirdID"]/HB.age2.vp))[1],
-             (HPDinterval(HBmod.age2$VCV[,"SocialBroodID"]/HB.age2.vp))[1], 0,
-             (HPDinterval(HBmod.age2$VCV[,"animal"]/HB.age2.vp))[1]) #create vector of lower CIs
-
-var.upper<-c((HPDinterval(HBmod.age2$VCV[,"units"]/HB.age2.vp))[2], 
-             (HPDinterval(HBmod.age2$VCV[,"Cohort"]/HB.age2.vp))[2],
-             (HPDinterval(HBmod.age2$VCV[,"BirdID"]/HB.age2.vp))[2],
-             (HPDinterval(HBmod.age2$VCV[,"SocialBroodID"]/HB.age2.vp))[2], 0,
-             (HPDinterval(HBmod.age2$VCV[,"animal"]/HB.age2.vp))[2]) #create vector of upper CIs
-
-HB.plot.2<-as.data.frame(cbind(Age, Component, var.prop, var.lower, var.upper)) #create age 2 df
-
-#find age three total phenotypic var
-Age<-rep(3, 6) #repeat age for each variance component
-Component<-c("Residual", "Cohort", "Bird ID", "Social Brood", "Maternal", "Heritability") #create vector of variance component names
-HB.age3.vp<-(HBmod.age3$VCV[,"BirdID"]+HBmod.age3$VCV[,"animal"]+
-               HBmod.age3$VCV[,"Cohort"]+HBmod.age3$VCV[,"units"]
-             +HBmod.age3$VCV[,"SocialBroodID"]+HBmod.age3$VCV[,"dam"]) #find age 3 vp
-var.prop<-c((mean(HBmod.age3$VCV[,"units"]/HB.age3.vp)), 
-            (mean(HBmod.age3$VCV[,"Cohort"]/HB.age3.vp)),
-            (mean(HBmod.age3$VCV[,"BirdID"]/HB.age3.vp)),
-            (mean(HBmod.age3$VCV[,"SocialBroodID"]/HB.age3.vp)),
-            (mean(HBmod.age3$VCV[,"dam"]/HB.age3.vp)),
-            (mean(HBmod.age3$VCV[,"animal"]/HB.age3.vp))) #create vector of variance component estimates
-
-var.lower<-c((HPDinterval(HBmod.age3$VCV[,"units"]/HB.age3.vp))[1], 
-             (HPDinterval(HBmod.age3$VCV[,"Cohort"]/HB.age3.vp))[1],
-             (HPDinterval(HBmod.age3$VCV[,"BirdID"]/HB.age3.vp))[1],
-             (HPDinterval(HBmod.age3$VCV[,"SocialBroodID"]/HB.age3.vp))[1],
-             (HPDinterval(HBmod.age3$VCV[,"dam"]/HB.age3.vp))[1],
-             (HPDinterval(HBmod.age3$VCV[,"animal"]/HB.age3.vp))[1]) #create vector of lower CIs
-
-var.upper<-c((HPDinterval(HBmod.age3$VCV[,"units"]/HB.age3.vp))[2], 
-             (HPDinterval(HBmod.age3$VCV[,"Cohort"]/HB.age3.vp))[2],
-             (HPDinterval(HBmod.age3$VCV[,"BirdID"]/HB.age3.vp))[2],
-             (HPDinterval(HBmod.age3$VCV[,"SocialBroodID"]/HB.age3.vp))[2],
-             (HPDinterval(HBmod.age3$VCV[,"dam"]/HB.age3.vp))[2],
-             (HPDinterval(HBmod.age3$VCV[,"animal"]/HB.age3.vp))[2]) #create vector of upper CIs
-
-HB.plot.3<-as.data.frame(cbind(Age, Component, var.prop, var.lower, var.upper)) #make age 3 df
-
-#age 4 to 8
-
-Age<-rep("4-8", 6) #repeat age for each variance component
-Component<-c("Residual", "Cohort", "Bird ID", "Social Brood", "Maternal", "Heritability") #create vector of var. comp. names
-HB.age4to8.vp<-(HBmod.age4to8$VCV[,"BirdID"]+HBmod.age4to8$VCV[,"animal"]+
-                  HBmod.age4to8$VCV[,"Cohort"]+HBmod.age4to8$VCV[,"units"]
-                +HBmod.age4to8$VCV[,"SocialBroodID"]) #find age 4-8 vp
-
-var.prop<-c((mean(HBmod.age4to8$VCV[,"units"]/HB.age4to8.vp)), 
-            (mean(HBmod.age4to8$VCV[,"Cohort"]/HB.age4to8.vp)),
-            (mean(HBmod.age4to8$VCV[,"BirdID"]/HB.age4to8.vp)),
-            (mean(HBmod.age4to8$VCV[,"SocialBroodID"]/HB.age4to8.vp)), 0,
-            (mean(HBmod.age4to8$VCV[,"animal"]/HB.age4to8.vp))) #create vector of variance component estimates
-
-var.lower<-c((HPDinterval(HBmod.age4to8$VCV[,"units"]/HB.age4to8.vp))[1], 
-             (HPDinterval(HBmod.age4to8$VCV[,"Cohort"]/HB.age4to8.vp))[1],
-             (HPDinterval(HBmod.age4to8$VCV[,"BirdID"]/HB.age4to8.vp))[1],
-             (HPDinterval(HBmod.age4to8$VCV[,"SocialBroodID"]/HB.age4to8.vp))[1], 0,
-             (HPDinterval(HBmod.age4to8$VCV[,"animal"]/HB.age4to8.vp))[1]) #create vector of lower CIs
-
-var.upper<-c((HPDinterval(HBmod.age4to8$VCV[,"units"]/HB.age4to8.vp))[2], 
-             (HPDinterval(HBmod.age4to8$VCV[,"Cohort"]/HB.age4to8.vp))[2],
-             (HPDinterval(HBmod.age4to8$VCV[,"BirdID"]/HB.age4to8.vp))[2],
-             (HPDinterval(HBmod.age4to8$VCV[,"SocialBroodID"]/HB.age4to8.vp))[2], 0,
-             (HPDinterval(HBmod.age4to8$VCV[,"animal"]/HB.age4to8.vp))[2]) #create vector of upper CIs
-
-HB.plot.4<-as.data.frame(cbind(Age, Component, var.prop, var.lower, var.upper)) #make age 4-8 df
-HB.plot<-rbind(HB.plot, HB.plot.2, HB.plot.3, HB.plot.4) #combine dfs for all ages
-HB.plot$var.prop<-as.numeric(as.character(HB.plot$var.prop)) #make variable numeric
-HB.plot$var.lower<-as.numeric(as.character(HB.plot$var.lower)) #make variable numeric
-HB.plot$var.upper<-as.numeric(as.character(HB.plot$var.upper)) #make variable numeric
-HB.plot$Component = factor(HB.plot$Component, levels = unique(HB.plot$Component)) #factorise and order variable names
-head(HB.plot) #view HB variance component by age dataframe
-
-#make stacked bar plot for HB variance components by age and save as a png to the working directory 
-png("HB.stackedplot.png")
-ggplot(HB.plot, aes(x = Age, y = var.prop, fill = Component)) + 
-  geom_bar(stat = "identity", width=0.7) +
-  xlab("Age") +
-  ylab("Proportion of Total Variance") +
-  scale_fill_manual(values=c("palegreen1", "palegreen3", "springgreen4", "yellow", "darkorange", "purple4"))+
-  theme_classic(base_size=18)
-dev.off()
-
 #HB heritability plot====
 Age<-c(1, 2, 3, "4 to 8") #make vector of ages
 age1<-c(posterior.mode(HB.age1.h2), HPDinterval(HB.age1.h2)[1], HPDinterval(HB.age1.h2)[2]) #join age 1 values
@@ -1289,42 +978,6 @@ HPDinterval(MAmod.agecorr.by) #credibility intervals
 
 #find MA age-corrected evolvability (mean-standardised)
 posterior.mode(MAmod.agecorr$VCV[,"animal"])/(mean(MA$MA)*mean(MA$MA))
-
-#age-corr plot====
-Variables<-c("A", "BY", "PE", "Yr", "R") #create vector of name of variance components
-var.prop<-c((posterior.mode(MAmod.agecorr$VCV[,"animal"]/MAmod.agecorr.vp)),
-            (posterior.mode(MAmod.agecorr$VCV[,"Cohort"]/MAmod.agecorr.vp)), 
-            (posterior.mode(MAmod.agecorr$VCV[,"BirdID"]/MAmod.agecorr.vp)),
-            (posterior.mode(MAmod.agecorr$VCV[,"captureyear"]/MAmod.agecorr.vp)),
-            (posterior.mode(MAmod.agecorr$VCV[,"units"]/MAmod.agecorr.vp))) #create vector of variance component estimates
-
-var.lower<-c((HPDinterval(MAmod.agecorr$VCV[,"animal"]/MAmod.agecorr.vp))[1],
-             (HPDinterval(MAmod.agecorr$VCV[,"Cohort"]/MAmod.agecorr.vp))[1], 
-             (HPDinterval(MAmod.agecorr$VCV[,"BirdID"]/MAmod.agecorr.vp))[1],
-             (HPDinterval(MAmod.agecorr$VCV[,"captureyear"]/MAmod.agecorr.vp))[1],
-             (HPDinterval(MAmod.agecorr$VCV[,"units"]/MAmod.agecorr.vp))[1]) #create vector of lower CIs
-
-var.upper<-c((HPDinterval(MAmod.agecorr$VCV[,"animal"]/MAmod.agecorr.vp))[2], 
-             (HPDinterval(MAmod.agecorr$VCV[,"Cohort"]/MAmod.agecorr.vp))[2],
-             (HPDinterval(MAmod.agecorr$VCV[,"BirdID"]/MAmod.agecorr.vp))[2],
-             (HPDinterval(MAmod.agecorr$VCV[,"captureyear"]/MAmod.agecorr.vp))[2],
-             (HPDinterval(MAmod.agecorr$VCV[,"units"]/MAmod.agecorr.vp))[2]) #create vector of upper CIs
-
-MA.plot<-as.data.frame(cbind(Variables, var.prop, var.lower, var.upper)) #join names, estimates and CIs as a dataframe
-
-MA.plot$var.prop<-as.numeric(as.character(MA.plot$var.prop)) #make variance numeric
-MA.plot$var.lower<-as.numeric(as.character(MA.plot$var.lower)) #make lower CIs numeric 
-MA.plot$var.upper<-as.numeric(as.character(MA.plot$var.upper)) #make upper CIs numeric
-
-#create plot of variance components and CIs for mask size in ggplot2
-plot1<-ggplot(MA.plot, aes(x=Variables, y=var.prop, group=1)) +
-  geom_errorbar(size=0.4, width=0.06, aes(ymin=MA.plot$var.lower, ymax=MA.plot$var.upper), colour="black") +
-  geom_point(shape=21, size=2, fill="black") +
-  theme_classic() +
-  xlab("Variance Component") +
-  ylab("Proportion of Vp") 
-scale_y_continuous(breaks = pretty(MA.plot$var.prop, n = 8))
-plot1 #view plot
 
 #mask by age====
 MA.ages <- split( MA , f = MA$age ) #split dataset into a list of dataframes of each age
@@ -1548,107 +1201,6 @@ MAmod.age4to8.r<-MAmod.age4to8$VCV[, "units"]/MA.age4to8.vp #find age 4-8 residu
 posterior.mode(MAmod.age4to8.r) #view age 4-8 residual
 HPDinterval(MAmod.age4to8.r) #view CIs
 
-#MA stacked plot by age====
-Age<-rep(1, 4) #create vector of age for each age 1 variance component
-Component<-c("Residual", "Cohort", "Bird ID", "Heritability") #create vector of variance component names
-
-var.prop<-c(posterior.mode(MAmod.age1$VCV[,"units"]), 
-            posterior.mode(MAmod.age1$VCV[,"Cohort"]),
-            posterior.mode(MAmod.age1$VCV[,"BirdID"]),
-            posterior.mode(MAmod.age1$VCV[,"animal"])) #create vector of age 1 variance components
-
-var.lower<-c((HPDinterval(MAmod.age1$VCV[,"units"]/MA.age1.vp))[1], 
-             (HPDinterval(MAmod.age1$VCV[,"Cohort"]/MA.age1.vp))[1],
-             (HPDinterval(MAmod.age1$VCV[,"BirdID"]/MA.age1.vp))[1],
-             (HPDinterval(MAmod.age1$VCV[,"animal"]/MA.age1.vp))[1]) #create vector of lower CIs
-
-var.upper<-c((HPDinterval(MAmod.age1$VCV[,"units"]/MA.age1.vp))[2], 
-             (HPDinterval(MAmod.age1$VCV[,"Cohort"]/MA.age1.vp))[2],
-             (HPDinterval(MAmod.age1$VCV[,"BirdID"]/MA.age1.vp))[2],
-             (HPDinterval(MAmod.age1$VCV[,"animal"]/MA.age1.vp))[2]) #create vector of upper CIs
-
-MA.plot<-as.data.frame(cbind(Age, Component, var.prop, var.lower, var.upper)) #join estimates, names and CIs as a dataframe
-
-
-#find age two total phenotypic var
-Age<-rep(2, 4) #create vector of age repeated for no. of age 2 variance components 
-Component<-c("Residual", "Cohort", "Bird ID", "Heritability") #create vector of variance component names
-
-var.prop<-c(posterior.mode(MAmod.age2$VCV[,"units"]), 
-            posterior.mode(MAmod.age2$VCV[,"Cohort"]),
-            posterior.mode(MAmod.age2$VCV[,"BirdID"]),
-            posterior.mode(MAmod.age2$VCV[,"animal"])) #create vector of variance component estimates
-
-var.lower<-c((HPDinterval(MAmod.age2$VCV[,"units"]/MA.age2.vp))[1], 
-             (HPDinterval(MAmod.age2$VCV[,"Cohort"]/MA.age2.vp))[1],
-             (HPDinterval(MAmod.age2$VCV[,"BirdID"]/MA.age2.vp))[1],
-             (HPDinterval(MAmod.age2$VCV[,"animal"]/MA.age2.vp))[1]) #create vector of lower CIs
-
-var.upper<-c((HPDinterval(MAmod.age2$VCV[,"units"]/MA.age2.vp))[2], 
-             (HPDinterval(MAmod.age2$VCV[,"Cohort"]/MA.age2.vp))[2],
-             (HPDinterval(MAmod.age2$VCV[,"BirdID"]/MA.age2.vp))[2],
-             (HPDinterval(MAmod.age2$VCV[,"animal"]/MA.age2.vp))[2]) #create vector of upper CIs
-
-MA.plot.2<-as.data.frame(cbind(Age, Component, var.prop, var.lower, var.upper)) #create age 2 variance component df
-
-#find age three total phenotypic var
-Age<-rep(3, 4) #repeat age for each age 3 variance component
-Component<-c("Residual", "Cohort", "Bird ID", "Heritability") #create vector of variance component names
-
-var.prop<-c(posterior.mode(MAmod.age3$VCV[,"units"]), 
-            posterior.mode(MAmod.age3$VCV[,"Cohort"]),
-            posterior.mode(MAmod.age3$VCV[,"BirdID"]),
-            posterior.mode(MAmod.age3$VCV[,"animal"])) #create vector of variance component estimates
-
-var.lower<-c((HPDinterval(MAmod.age3$VCV[,"units"]/MA.age3.vp))[1], 
-             (HPDinterval(MAmod.age3$VCV[,"Cohort"]/MA.age3.vp))[1],
-             (HPDinterval(MAmod.age3$VCV[,"BirdID"]/MA.age3.vp))[1],
-             (HPDinterval(MAmod.age3$VCV[,"animal"]/MA.age3.vp))[1]) #create vector of lower CIs
-
-var.upper<-c((HPDinterval(MAmod.age3$VCV[,"units"]/MA.age3.vp))[2], 
-             (HPDinterval(MAmod.age3$VCV[,"Cohort"]/MA.age3.vp))[2],
-             (HPDinterval(MAmod.age3$VCV[,"BirdID"]/MA.age3.vp))[2],
-             (HPDinterval(MAmod.age3$VCV[,"animal"]/MA.age3.vp))[2]) #create vector of upper CIs
-
-MA.plot.3<-as.data.frame(cbind(Age, Component, var.prop, var.lower, var.upper)) #create age 3 variance component df
-
-#age 4 to 8
-Age<-rep("4-8", 4) #repeat age for each age 4-8 var. component
-Component<-c("Residual", "Cohort", "Bird ID", "Heritability") #create vector of variance component names
-
-var.prop<-c(posterior.mode(MAmod.age4to8$VCV[,"units"]), 
-            posterior.mode(MAmod.age4to8$VCV[,"Cohort"]),
-            posterior.mode(MAmod.age4to8$VCV[,"BirdID"]),
-            posterior.mode(MAmod.age4to8$VCV[,"animal"])) #create vector of var. comp. estimates
-
-var.lower<-c((HPDinterval(MAmod.age4to8$VCV[,"units"]/MA.age4to8.vp))[1], 
-             (HPDinterval(MAmod.age4to8$VCV[,"Cohort"]/MA.age4to8.vp))[1],
-             (HPDinterval(MAmod.age4to8$VCV[,"BirdID"]/MA.age4to8.vp))[1],
-             (HPDinterval(MAmod.age4to8$VCV[,"animal"]/MA.age4to8.vp))[1]) #create vector of lower CIs
-
-var.upper<-c((HPDinterval(MAmod.age4to8$VCV[,"units"]/MA.age4to8.vp))[2], 
-             (HPDinterval(MAmod.age4to8$VCV[,"Cohort"]/MA.age4to8.vp))[2],
-             (HPDinterval(MAmod.age4to8$VCV[,"BirdID"]/MA.age4to8.vp))[2],
-             (HPDinterval(MAmod.age4to8$VCV[,"animal"]/MA.age4to8.vp))[2]) #create vector of upper CIs
-
-MA.plot.4<-as.data.frame(cbind(Age, Component, var.prop, var.lower, var.upper)) #make age 4-8 var. components df
-
-MA.plot<-rbind(MA.plot, MA.plot.2, MA.plot.3, MA.plot.4) #join variance component dfs of each age
-MA.plot$var.prop<-as.numeric(as.character(MA.plot$var.prop)) #make variance numeric
-MA.plot$var.lower<-as.numeric(as.character(MA.plot$var.lower)) #make CIs numeric
-MA.plot$var.upper<-as.numeric(as.character(MA.plot$var.upper)) #make CIs numeric
-MA.plot$Component = factor(MA.plot$Component, levels = unique(MA.plot$Component)) #factorise & order variable names
-
-#create stacked bar plot for mask in ggplot2
-png(filename="MA.stackedplot.png")
-ggplot(MA.plot, aes(x = Age, y = var.prop, fill = Component)) + 
-  geom_bar(stat = "identity", width=0.7) +
-  xlab("Age") +
-  ylab("Variance Estimate") +
-  scale_fill_manual(values=c("palegreen1", "palegreen3", "springgreen4", "purple4"))+
-  theme_classic(base_size=18)
-dev.off() #plot and save as png to the working directory
-
 #MA heritability plot====
 Age<-c(1, 2, 3, "4 to 8") #create vector of age groups
 age1<-c(posterior.mode(MA.age1.h2), HPDinterval(MA.age1.h2)[1], 
@@ -1728,20 +1280,6 @@ VB.sg<-subset(VB.sg, VB.sg$Observer!="AS")
 HB.sg<-subset(HB.sg, HB.sg$Observer!="AS")
 
 #VB size selection====
-
-#is there a difference between ones that breed (1) and ones that don't (0)
-VB.sg$breed<-ifelse(VB.sg$Recruits==0, "Never recruited", "Recruited") #make new variable
-png("VB.recruitment.png")
-boxplot(VB.sg$VB~VB.sg$breed, ylab="Visible badge size (mm)") #visualise relationship with VB
-dev.off()
-t.test(VB.sg$VB[VB.sg$breed=="Never recruited"], VB.sg$VB[VB.sg$breed=="Recruited"]) #test for significance
-
-#difference in number of broods
-VB.sg$AnnBroods<-as.factor(VB.sg$AnnBroods) 
-boxplot(VB.sg$VB~VB.sg$AnnBroods) #visualise whether VB affects no. of broods
-VB.aov<-aov(VB~AnnBroods, data=VB.sg) #run anova to test for difference between all group means
-summary.aov(VB.aov) #view ANOVA results - no significance
-
 #selection gradient by year
 VB.sel.std<-subset(VB.sg, VB.sg$Recruits!="NA") #remove individuals without recruitment data
 VB.n<-VB.sel.std%>%group_by(Year)%>%summarise(n=length(BirdID)) #check sample sizes for each year- less than 10 not good
@@ -1793,21 +1331,6 @@ ggplot() +
 dev.off() #plot VB selection gradients by year and save to wd
 
 #HB size selection====
-
-#is there a difference between ones that breed (1) and ones that don't (0)
-HB.sg$breed<-ifelse(HB.sg$Recruits==0, "Never recruited", "Recruited") #create variable of birds that did and did not recruit
-png("HB.recruitment.png")
-boxplot(HB.sg$HB~HB.sg$breed, ylab="Hidden Badge (mm)") #visualise relationship with HB size
-dev.off()
-t.test(HB.sg$HB[HB.sg$breed=="Never recruited"], HB.sg$HB[HB.sg$breed=="Recruited"]) #test for significance
-
-#difference in number of broods
-HB.sg$AnnBroods<-as.factor(HB.sg$AnnBroods) 
-boxplot(HB.sg$HB~HB.sg$AnnBroods) #view relationship between HB and no. of broods
-HB.aov<-aov(HB~AnnBroods, data=HB.sg) #run anova to test for difference between all group means
-summary.aov(HB.aov) #view ANOVA results
-TukeyHSD(HB.aov) #ANOVA was significance - run Tukey to test pairwise significance between means
-
 #selection gradients by year 
 HB.sel.std<-subset(HB.sg, HB.sg$Recruits!="NA")  #remove birds without recruitment data
 HB.n<-HB.sel.std%>%group_by(Year)%>%summarise(n=length(BirdID)) #check sample sizes for each year- ideally all more than 10
@@ -1862,19 +1385,6 @@ dev.off() #plot the selection gradients by year with error bars and save to wd
 
 #MASK size selection====
 
-#is there a difference between ones that breed and ones that don't (0)
-MA.sg$breed<-ifelse(MA.sg$Recruits==0, "Never recruited", "Recruited") #create variable of whether or not individuals recruited in their lifetimes
-png("MA.recruitment.png")
-boxplot(MA.sg$MA~MA.sg$breed, ylab="Mask size (mm)") #visualise difference between those that recruit and those that do not
-dev.off()
-t.test(MA.sg$MA[MA.sg$breed=="Never recruited"], MA.sg$MA[MA.sg$breed=="Recruited"]) #statistically test difference
-
-#difference in number of broods
-MA.sg$AnnBroods<-as.factor(MA.sg$AnnBroods) #factorise annual number of broods
-boxplot(MA.sg$MA~MA.sg$AnnBroods) #visualise difference in mask size between no. of broods
-MA.aov<-aov(MA~AnnBroods, data=MA.sg) #run anova to test for difference between all group means
-summary.aov(MA.aov) #show results of ANOVA - no significance
-
 #selection gradients by year 
 MA.sel.std<-ddply(MA.sg, c("Year"), transform, MA.std=scale(MA)) #create df with z-standardised mask size within each year 
 MA.n<-MA.sel.std%>%group_by(Year)%>%summarise(n=length(BirdID)) #check sample sizes for each year - less than 10 is not good 
@@ -1924,21 +1434,16 @@ ggplot() +
 dev.off() #plot the selection gradients by year with error bars and save to wd
 
 #sel. sample size plot ====
-MA.n<-as.data.frame(MA.n) #make mask sample sizes a dataframe
-MA.n$Trait<-rep("MA", length(MA.n$Year)) #create variable with trait name
-
-HB.n<-as.data.frame(HB.n) #make hidden badge sample sizes a dataframe
-HB.n$Trait<-rep("HB", length(HB.n$Year)) #create variable with trait name
-
 VB.n<-as.data.frame(VB.n) #make visible badge sample sizes a dataframe
 VB.n$Trait<-rep("VB", length(VB.n$Year)) #create variable with trait name
-
+HB.n<-as.data.frame(HB.n) #make hidden badge sample sizes a dataframe
+HB.n$Trait<-rep("HB", length(HB.n$Year)) #create variable with trait name
+MA.n<-as.data.frame(MA.n) #make mask sample sizes a dataframe
+MA.n$Trait<-rep("MA", length(MA.n$Year)) #create variable with trait name
 sg.n<-rbind(VB.n, HB.n) #merge traits
 sg.n<-rbind(sg.n, MA.n) #merge traits into one dataset
 head(sg.n) #check dataset
-
 sg.n$Trait <- factor(sg.n$Trait, levels = c('HB', 'VB', 'MA')) #order traits in variable so they don't appear alphabetically in plot
-
 #plot all trait sample sizes for sel. grad. analysis by year
 sg.n<-filter(sg.n, Year<2016) #remove 2016 & 17 data as gradients only up until 2015
 png(filename="selgrad.samplesizes.png", width=700, height=500) #save as a png
@@ -1953,4 +1458,5 @@ sg.n %>%
         panel.background = element_blank(), axis.line = element_line(colour = "black")) +
   scale_y_continuous(expand=c(0,0), breaks=round(seq(0, 160, by=20), 1) ) #plot sample sizes by year of males used in selection analyses
 dev.off()
+
 ##END OF SCRIPT
